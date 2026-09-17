@@ -1,0 +1,341 @@
+Titre : Guide d'Utilisation – Module Ingestion & Nettoyage
+
+Ce fichier texte sert d'exemple pour la démonstration de l'étape de nettoyage
+dans le pipeline RAG. Il contient volontairement plusieurs éléments de "bruit"
+afin d'observer l'effet du nettoyage :
+
+-    Espaces multiples
+- Retours    à   la   ligne
+- Caractères superflus
+- Sections vides
+
+
+Voici un exemple de paragraphe mal formaté :
+
+Le nettoyage du texte est une étape essentielle.
+Il permet      d'améliorer    la    qualité des embeddings.
+   Plus le    texte est propre,
+mieux le modèle comprendra le contenu.
+
+
+Section 2 : Exemples supplémentaires de bruit textuel
+
+Les documents réels contiennent souvent   des artefacts issus
+de la conversion PDF vers texte, comme par exemple :
+
+***   ***   ***
+
+1)  Des puces mal alignées
+2)     Des numéros de page isolés
+3) Des en-têtes répétés sur chaque page
+
+
+-------------------------------------
+Page 1 sur 12
+-------------------------------------
+
+Voici un paragraphe avec des tabulations		mélangées		à des espaces,
+ainsi   que    des     espaces      multiples     consécutifs.
+
+
+   Ce paragraphe commence   par une indentation inutile,
+et contient    des sauts
+de
+ligne
+au milieu
+d'une
+seule phrase.
+
+
+Section 3 : Caractères spéciaux et symboles superflus
+
+Certains documents contiennent des symboles isolés : §, ¶, •, ©, ®, ™
+ou des séquences bizarres comme : @@@---###   ~~~   ///\\\
+
+
+Tableau mal formaté (souvent issu d'un export PDF) :
+
+Nom          Age     Ville
+Julien        29      Paris
+Amina              34         Lyon
+Karim    41  Marseille
+
+
+Section 4 : Répétitions et doublons
+
+Ceci est une phrase de test.
+Ceci est une phrase de test.
+Ceci est une phrase de test.
+
+Le nettoyage doit aussi permettre de détecter les doublons évidents
+afin d'éviter de polluer l'index vectoriel avec des chunks redondants.
+
+
+Section 5 : Lignes vides excessives (souvent 5, 10 lignes vides d'affilée)
+
+
+
+
+
+
+Après ce grand vide, le texte reprend normalement.
+
+
+Section 6 : Fragments issus d'en-têtes et pieds de page répétés
+
+CONFIDENTIEL – NE PAS DIFFUSER
+CONFIDENTIEL – NE PAS DIFFUSER
+Rapport interne – Version 3.2 – Page 4
+CONFIDENTIEL – NE PAS DIFFUSER
+
+Ces artefacts apparaissent typiquement lorsque l'extraction PDF récupère
+les en-têtes et pieds de page comme s'ils faisaient partie du contenu
+principal du document, ce qui pollue les chunks générés pour l'indexation.
+
+
+Section 7 : Liens et références mal formatés
+
+Voir aussi : https://exemple.com/document?ref=1234&session=abcxyz
+Contact : jean . dupont @ exemple . com
+Téléphone :   06   12   34   56   78
+Référence interne : DOC-2024-000456-FR-v2-FINAL-FINAL2-corrigé
+
+
+Section 8 : Mélange de langues et d'encodages
+
+This paragraph is actually in English by mistake, inserted into a French
+document during a copy-paste error. Il arrive fréquemment que des documents
+multilingues contiennent des fragments dans une autre langue que celle
+attendue, ce qui peut perturber certains pipelines de nettoyage naïfs.
+
+Ejemplo en español también insertado accidentalmente en este documento
+para simuler un cas réel de corpus multilingue mal trié.
+
+
+Section 9 : Nombres, unités et formats incohérents
+
+Le budget alloué est de 1.500,00€ (parfois noté 1500 EUR, parfois 1 500,00 EUR).
+La distance mesurée est de 12,5km ou encore 12.5 km selon les documents.
+Date du rapport : 05/09/2026 ou bien 2026-09-05 ou encore 5 septembre 2026.
+Pourcentage de croissance : 12,3 % (parfois écrit 12.3% sans espace).
+
+
+Section 10 : Phrases tronquées et fragments incomplets
+
+Le système doit être capable de dét
+
+ecter automatiquement les coupures de mots
+qui surviennent lors d'une extraction PDF mal gérée, notamment lorsque
+le texte est réparti sur deux colonnes et que l'extracteur ne respecte pas
+l'ordre de lecture naturel du document.
+
+Voici une phrase normale qui suit immédiatement une phrase tronquée sans
+transition claire, ce qui complique la segmentation automatique en chunks
+cohérents pour le système de récupération d'information.
+
+
+Section 11 : Listes à puces incohérentes
+
+• Premier élément avec puce ronde
+- Deuxième élément avec tiret
+* Troisième élément avec astérisque
+→ Quatrième élément avec flèche
+1. Cinquième élément numéroté qui rompt le style de la liste
+
+
+Section 12 : Notes de bas de page et annotations
+
+Le modèle de langage[1] utilise une architecture Transformer[2] pour
+générer des embeddings vectoriels[3] représentant le sens sémantique
+du texte source.
+
+[1] Voir glossaire, page 45.
+[2] Vaswani et al., publication de référence sur l'architecture.
+[3] Un embedding est un vecteur dense de dimension fixe.
+
+
+Section 13 : Texte avec fautes de frappe volontaires
+
+Le pipleine de traitment du langage naturel doit gerer les fautes
+de frape courantes, comme des lettres inversées ou des accents
+manqants, car ces erreurs sont frequentes dans les documents
+numerisés par OCR de mauvaise qualité.
+
+
+Section 14 : Blocs de code ou de configuration mélangés au texte narratif
+
+Voici un extrait de configuration retrouvé par erreur dans le corps du texte :
+
+{
+  "chunk_size": 512,
+  "chunk_overlap": 50,
+  "embedding_model": "text-embedding-3-small"
+}
+
+Ce type de contenu technique ne devrait normalement pas se trouver mélangé
+avec le texte explicatif destiné aux utilisateurs finaux du guide.
+
+
+Section 15 : Citations mal formatées et guillemets incohérents
+
+Comme le disait un expert du domaine : "la qualité des données d'entrée
+détermine directement la qualité des résultats obtenus".
+On trouve aussi parfois des guillemets typographiques « mal fermés
+ou bien des guillemets anglais "mixés" avec des guillemets français.
+
+
+Section 16 : Espaces insécables et caractères invisibles
+
+Certains documents contiennent des espaces insécables (invisibles à l'œil nu)
+qui peuvent perturber les opérations de découpage en mots ou en tokens,
+tout comme les caractères de contrôle invisibles parfois présents dans
+les fichiers exportés depuis des logiciels de traitement de texte anciens.
+
+
+Section 17 : Paragraphes très longs sans ponctuation adéquate
+
+le nettoyage de texte pour les systèmes de génération augmentée par
+récupération doit prendre en compte de nombreux cas particuliers qui
+ne sont pas toujours visibles à première vue notamment lorsque les
+documents proviennent de sources hétérogènes comme des pages web des
+fichiers pdf scannés des documents word exportés depuis des versions
+anciennes du logiciel ou encore des fichiers texte bruts produits par
+des scripts automatisés qui ne respectent pas toujours les conventions
+de ponctuation et de mise en forme attendues par les humains ce qui
+complique considérablement la tâche du pipeline de nettoyage automatisé
+
+
+Section 18 : Résumé des objectifs du module de nettoyage
+
+L'objectif principal du module de nettoyage est de transformer un texte
+brut, potentiellement bruité, en un texte normalisé et cohérent, prêt
+à être découpé en chunks pour l'indexation vectorielle. Les principales
+opérations attendues sont :
+
+- Normalisation des espaces multiples en un seul espace
+- Suppression des lignes vides excessives
+- Suppression ou signalement des en-têtes et pieds de page répétés
+- Détection et suppression des doublons de phrases ou de paragraphes
+- Harmonisation des formats de date, de nombre et d'unité
+- Suppression des caractères de contrôle invisibles
+- Correction ou signalement des mots coupés en fin de ligne
+- Normalisation des guillemets et de la ponctuation
+
+
+Section 19 : Conclusion du document de test
+
+Ce document de test rassemble volontairement une grande variété de
+cas de bruit textuel afin de permettre une validation exhaustive du
+module de nettoyage avant son intégration dans le pipeline complet
+de traitement documentaire pour le système de génération augmentée
+par récupération. Chaque section illustre un type de problème distinct
+que l'on peut rencontrer dans des corpus réels issus de sources variées
+telles que des rapports d'entreprise, des pages web, des documents
+scannés ou des exports de bases de connaissances internes.
+
+
+Section 20 : Documents juridiques et clauses répétitives
+
+Le présent document est fourni à titre informatif uniquement et ne saurait
+engager la responsabilité de son auteur en cas d'erreur ou d'omission.
+Le présent document est fourni à titre informatif uniquement et ne saurait
+engager la responsabilité de son auteur en cas d'erreur ou d'omission.
+Toute reproduction, même partielle, est soumise à autorisation préalable.
+Tous droits réservés © 2026. Tous droits réservés © 2026. Tous droits
+réservés © 2026.
+
+Les documents juridiques contiennent souvent des clauses standard répétées
+sur plusieurs pages, ce qui peut fortement biaiser un système de récupération
+d'information si ces répétitions ne sont pas correctement filtrées avant
+l'indexation vectorielle du corpus.
+
+
+Section 21 : Transcriptions d'appels et artefacts de reconnaissance vocale
+
+Locuteur 1 : euh donc en fait ce qu'on voulait dire c'est que euh le
+projet avance plutôt bien mais il y a des points à clarifier
+Locuteur 2 : oui oui tout à fait je suis d'accord avec toi sur ce point
+Locuteur 1 : [inaudible] donc voilà pour le euh pour le prochain sprint
+Locuteur 2 : parfait merci beaucoup
+
+Les transcriptions automatiques de réunions ou d'appels téléphoniques
+contiennent fréquemment des hésitations, des répétitions, des marqueurs
+d'inaudibilité et des tours de parole mal segmentés, autant d'éléments
+qui doivent être traités différemment du texte rédigé classique.
+
+
+Section 22 : Données tabulaires exportées en texte brut
+
+ID    Produit         Prix_HT   Stock   Catégorie
+001   Ordinateur portable   899.99   12      Informatique
+002   Souris sans fil        19.90    150     Accessoires
+003   Écran 27 pouces        249.00   8       Informatique
+004   Clavier mécanique      89.50    45      Accessoires
+
+Ce type d'export tabulaire, lorsqu'il est mal converti en texte brut,
+perd sa structure en colonnes et devient difficile à interpréter pour
+un système de découpage sémantique classique, d'où l'intérêt de détecter
+ce format et de le traiter séparément dans le pipeline d'ingestion.
+
+
+Section 23 : Métadonnées mélangées au contenu
+
+auteur: Marie Lefevre
+date_creation: 2026-03-14
+version: 2.1
+statut: brouillon
+
+Rapport trimestriel sur les performances commerciales du deuxième trimestre
+de l'année en cours, incluant une analyse détaillée des ventes par région
+et par segment de clientèle, ainsi que des recommandations stratégiques
+pour le trimestre suivant.
+
+Les métadonnées de fichier, lorsqu'elles sont exportées en tête de document
+sans séparation claire, peuvent être confondues avec le contenu principal
+par les systèmes d'extraction automatique de texte.
+
+
+Section 24 : Emojis et caractères Unicode exotiques
+
+Le lancement du produit a été un succès 🎉🎉🎉 avec plus de 10 000 ventes
+la première semaine ✅. L'équipe est très satisfaite 😊 des résultats
+obtenus, malgré quelques difficultés techniques ⚠️ rencontrées en cours
+de route. Merci à toute l'équipe 🙏 pour son travail acharné.
+
+Les émojis et symboles Unicode variés, de plus en plus fréquents dans
+les communications internes et les messages informels intégrés à des
+documents professionnels, doivent être gérés explicitement par le
+module de nettoyage afin d'éviter des artefacts dans les embeddings.
+
+
+Section 25 : Notes manuscrites numérisées (simulation OCR imparfaite)
+
+Réu nion du 12/O3 - présent : J. Dupont, M. Martn, A. Bemard
+0rdre du jour :
+1- Suivi du 8udget
+2- P0int sur les l1vrables
+3- Quest1ons diverses
+
+Les documents numérisés via OCR contiennent souvent des confusions entre
+caractères visuellement proches, comme le zéro et la lettre O, ou le
+chiffre un et la lettre l, ce qui nécessite parfois une étape de correction
+orthographique spécifique avant l'indexation du contenu.
+
+
+Section 26 : Synthèse finale et recommandations pour le pipeline
+
+À l'issue de l'analyse de l'ensemble des sections précédentes, il apparaît
+clairement que le module de nettoyage doit être conçu de manière modulaire,
+avec des règles de traitement spécifiques pour chaque type de bruit identifié.
+Une approche purement générique, basée uniquement sur des expressions
+régulières simples, risque de ne pas couvrir l'ensemble des cas rencontrés
+dans des corpus documentaires réels et hétérogènes.
+
+Il est donc recommandé de mettre en place une chaîne de traitement composée
+de plusieurs étapes successives, chacune responsable d'un type de nettoyage
+précis, avec la possibilité de journaliser les modifications apportées afin
+de faciliter le débogage et l'amélioration continue du pipeline au fil du
+temps et de l'ajout de nouveaux types de documents source.
+
+
+FIN DU DOCUMENT.

@@ -1,0 +1,5 @@
+
+les fichiers texte sont la forme la plus simple de documents. Ils contiennent du texte brut, sans mise en forme ni structure complexe.
+pour les projets réel, tu auras souvent des pdf, des fichiers Word, des pages web ou d'autres formats de documents.
+l'idée est de tout standarniser sous forme de texte brut pour pouvoir les traiter de manière uniforme.
+
